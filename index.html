@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据侦探学院：数据验证互动游戏</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            border: "hsl(var(--border))",
+            input: "hsl(var(--input))",
+            ring: "hsl(var(--ring))",
+            background: "hsl(var(--background))",
+            foreground: "hsl(var(--foreground))",
+            primary: {
+              DEFAULT: "hsl(var(--primary))",
+              foreground: "hsl(var(--primary-foreground))",
+            },
+            secondary: {
+              DEFAULT: "hsl(var(--secondary))",
+              foreground: "hsl(var(--secondary-foreground))",
+            },
+            destructive: {
+              DEFAULT: "hsl(var(--destructive))",
+              foreground: "hsl(var(--destructive-foreground))",
+            },
+            muted: {
+              DEFAULT: "hsl(var(--muted))",
+              foreground: "hsl(var(--muted-foreground))",
+            },
+            accent: {
+              DEFAULT: "hsl(var(--accent))",
+              foreground: "hsl(var(--accent-foreground))",
+            },
+            card: {
+              DEFAULT: "hsl(var(--card))",
+              foreground: "hsl(var(--card-foreground))",
+            },
+          },
+        },
+      },
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- React and ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Custom CSS -->
+  <style>
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 222.2 84% 4.9%;
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 84% 4.9%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 222.2 84% 4.9%;
+      --primary: 221.2 83.2% 53.3%;
+      --primary-foreground: 210 40% 98%;
+      --secondary: 210 40% 96.1%;
+      --secondary-foreground: 222.2 47.4% 11.2%;
+      --muted: 210 40% 96.1%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --accent: 210 40% 96.1%;
+      --accent-foreground: 222.2 47.4% 11.2%;
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 214.3 31.8% 91.4%;
+      --input: 214.3 31.8% 91.4%;
+      --ring: 221.2 83.2% 53.3%;
+      --radius: 0.5rem;
+    }
+
+    .dark {
+      --background: 222.2 84% 4.9%;
+      --foreground: 210 40% 98%;
+      --card: 222.2 84% 4.9%;
+      --card-foreground: 210 40% 98%;
+      --popover: 222.2 84% 4.9%;
+      --popover-foreground: 210 40% 98%;
+      --primary: 217.2 91.2% 59.8%;
+      --primary-foreground: 222.2 47.4% 11.2%;
+      --secondary: 217.2 32.6% 17.5%;
+      --secondary-foreground: 210 40% 98%;
+      --muted: 217.2 32.6% 17.5%;
+      --muted-foreground: 215 20.2% 65.1%;
+      --accent: 217.2 32.6% 17.5%;
+      --accent-foreground: 210 40% 98%;
+      --destructive: 0 62.8% 30.6%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 217.2 32.6% 17.5%;
+      --input: 217.2 32.6% 17.5%;
+      --ring: 224.3 76.3% 48%;
+    }
+
+    .tabs-list {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+
+    .tab-trigger {
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-align: center;
+      border-radius: 0.25rem 0.25rem 0 0;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-trigger:hover {
+      background-color: hsl(var(--muted));
+    }
+
+    .tab-trigger.active {
+      color: hsl(var(--primary));
+      border-bottom: 2px solid hsl(var(--primary));
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .card {
+      background-color: hsl(var(--card));
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-description {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.875rem;
+    }
+
+    .card-content {
+      padding: 1.5rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background-color: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+    }
+
+    .btn-primary:hover {
+      background-color: hsl(var(--primary) / 0.9);
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid hsl(var(--border));
+      color: hsl(var(--foreground));
+    }
+
+    .btn-outline:hover {
+      background-color: hsl(var(--muted));
+    }
+
+    .input {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 0.375rem;
+      border: 1px solid hsl(var(--border));
+      background-color: transparent;
+      font-size: 0.875rem;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: hsl(var(--ring));
+      box-shadow: 0 0 0 2px hsl(var(--ring) / 0.3);
+    }
+
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .feedback-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      background-color: hsl(var(--muted));
+      margin-top: 1rem;
+    }
+
+    .text-green-500 {
+      color: #10b981;
+    }
+
+    .text-red-500 {
+      color: #ef4444;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .flex {
+      display: flex;
+    }
+
+    .flex-col {
+      flex-direction: column;
+    }
+
+    .items-center {
+      align-items: center;
+    }
+
+    .justify-center {
+      justify-content: center;
+    }
+
+    .gap-2 {
+      gap: 0.5rem;
+    }
+
+    .gap-4 {
+      gap: 1rem;
+    }
+
+    .mt-4 {
+      margin-top: 1rem;
+    }
+
+    .mb-4 {
+      margin-bottom: 1rem;
+    }
+
+    .mb-8 {
+      margin-bottom: 2rem;
+    }
+
+    .w-full {
+      width: 100%;
+    }
+
+    .h-4 {
+      height: 1rem;
+    }
+
+    .w-4 {
+      width: 1rem;
+    }
+
+    .h-16 {
+      height: 4rem;
+    }
+
+    .w-16 {
+      width: 4rem;
+    }
+
+    .mr-2 {
+      margin-right: 0.5rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .min-h-screen {
+      min-height: 100vh;
+    }
+
+    .py-10 {
+      padding-top: 2.5rem;
+      padding-bottom: 2.5rem;
+    }
+
+    .bg-gray-50 {
+      background-color: #f9fafb;
+    }
+
+    .text-3xl {
+      font-size: 1.875rem;
+    }
+
+    .font-bold {
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div class="container mx-auto py-10">
+    <h1 class="text-3xl font-bold text-center mb-8">数据侦探学院：数据验证互动游戏</h1>
+    
+    <div class="tabs">
+      <div class="tabs-list">
+        <div class="tab-trigger active" data-tab="range">范围检查</div>
+        <div class="tab-trigger" data-tab="length">长度检查</div>
+        <div class="tab-trigger" data-tab="type">类型检查</div>
+        <div class="tab-trigger" data-tab="format">格式检查</div>
+        <div class="tab-trigger" data-tab="checkdigit">校验位</div>
+        <div class="tab-trigger" data-tab="doubleentry">双重输入</div>
+        <div class="tab-trigger" data-tab="screen">屏幕检查</div>
+      </div>
+      
+      <!-- 范围检查 -->
+      <div class="tab-content active" id="range">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">范围检查挑战</h2>
+            <p class="card-description">
+              测试你对不同数据类型有效范围的理解。在这个游戏中，你需要判断给定值是否在有效范围内。
+            </p>
+          </div>
+          <div class="card-content">
+            <div class="game-container" id="range-check-game">
+              <div class="text-center mb-4">
+                <h3 class="mb-2">当前挑战：</h3>
+                <p id="range-challenge"></p>
+              </div>
+              
+              <div class="flex justify-center gap-4">
+                <button class="btn btn-outline" id="range-valid">有效</button>
+                <button class="btn btn-outline" id="range-invalid">无效</button>
+              </div>
+              
+              <div class="feedback-container" id="range-feedback" style="display: none;">
+                <div id="range-feedback-icon" class="mb-4"></div>
+                <p id="range-feedback-text"></p>
+                <button class="btn btn-primary mt-4" id="range-next">下一题</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 长度检查 -->
+      <div class="tab-content" id="length">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">长度检查挑战</h2>
+            <p class="card-description">
+              创建符合长度要求的输入。在这个游戏中，你需要输入符合特定长度限制的数据。
+            </p>
+          </div>
+          <div class="card-content">
+            <div class="game-container" id="length-check-game">
+              <div class="text-center mb-4">
+                <h3 class="mb-2">当前挑战：</h3>
+                <p id="length-challenge"></p>
+              </div>
+              
+              <div class="flex flex-col gap-2">
+                <input type="text" class="input" id="length-input" placeholder="请输入符合要求的文本">
+                <div class="flex items-center gap-2 mt-4">
+                  <div id="length-strength-bar" class="w-full h-4 bg-gray-200 rounded"></div>
+                  <span id="length-strength-text"></span>
+                </div>
+              </div>
+              
+              <div class="flex justify-center mt-4">
+                <button class="btn btn-primary" id="length-check">检查</button>
+              </div>
+              
+              <div class="feedback-container" id="length-feedback" style="display: none;">
+                <div id="length-feedback-icon" class="mb-4"></div>
+                <p id="length-feedback-text"></p>
+                <button class="btn btn-primary mt-4" id="length-next">下一题</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 类型检查 -->
+      <div class="tab-content" id="type">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">类型检查挑战</h2>
+            <p class="card-description">
+              识别不同值的数据类型。在这个游戏中，你需要判断给定值属于哪种数据类型。
+            </p>
+          </div>
+          <div class="card-content">
+            <div class="game-container" id="type-check-game">
+              <div class="text-center mb-4">
+                <h3 class="mb-2">当前值：</h3>
+                <p id="type-value" class="text-xl font-bold"></p>
+              </div>
+              
+              <div class="flex justify-center gap-2 flex-wrap">
+                <button class="btn btn-outline" data-type="number">数字</button>
+                <button class="btn btn-outline" data-type="string">字符串</button>
+                <button class="btn btn-outline" data-type="boolean">布尔值</button>
+                <button class="btn btn-outline" data-type="array">数组</button>
+                <button class="btn btn-outline" data-type="object">对象</button>
+                <button class="btn btn-outline" data-type="null">空值</button>
+                <button class="btn btn-outline" data-type="undefined">未定义</button>
+              </div>
+              
+              <div class="feedback-container" id="type-feedback" style="display: none;">
+                <div id="type-feedback-icon" class="mb-4"></div>
+                <p id="type-feedback-text"></p>
+                <button class="btn btn-primary mt-4" id="type-next">下一题</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 格式检查 -->
+      <div class="tab-content" id="format">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">格式检查挑战</h2>
+            <p class="card-description">
+              输入符合特定格式的数据。在这个游戏中，你需要确保输入符合特定的格式要求。
+            </p>
+          </div>
+          <div class="card-content">
+            <div class="game-container" id="format-check-game">
+              <div class="text-center mb-4">
+                <h3 class="mb-2">当前挑战：</h3>
+                <p id="format-challenge"></p>
+              </div>
+              
+              <div class="flex flex-col gap-2">
+                <input type="text" class="input" id="format-input" placeholder="请输入符合格式的文本">
+                <p id="format-hint" class="text-sm text-gray-500"></p>
+              </div>
+              
+              <div class="flex justify-center mt-4">
+                <button class="btn btn-primary" id="format-check">检查</button>
+              </div>
+              
+              <div class="feedback-container" id="format-feedback" style="display: none;">
+                <div id="format-feedback-icon" class="mb-4"></div>
+                <p id="format-feedback-text"></p>
+                <button class="btn btn-primary mt-4" id="format-next">下一题</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 校验位 -->
+      <div class="tab-content" id="checkdigit">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">校验位挑战</h2>
+            <p class="card-description">
+              验证包含校验位的编号。在这个游戏中，你需要判断给定的编号是否有效。
+            </p>
+          </div>
+          <div class="card-content">
+            <div class="game-container" id="checkdigit-game">
+              <div class="text-center mb-4">
+                <h3 class="mb-2">当前编号：</h3>
+                <p id="checkdigit-number" class="text-xl font-bold"></p>
+              </div>
+              
+              <div class="flex justify-center gap-4">
+                <button class="btn btn-outline" id="checkdigit-valid">有效</button>
+                <button class="btn btn-outline" id="checkdigit-invalid">无效</button>
+              </div>
+              
+              <div class="feedback-container" id="checkdigit-feedback" style="display: none;">
+                <div id="checkdigit-feedback-icon" class="mb-4"></div>
+                <p id="checkdigit-feedback-text"></p>
+                <button class="btn btn-primary mt-4" id="checkdigit-next">下一题</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 双重输入 -->
+      <div class="tab-content" id="doubleentry">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">双重输入挑战</h2>
+            <p class="card-description">
+              两次输入相同信息进行验证。在这个游戏中，你需要确保两次输入的内容完全一致。
+            </p>
+          </div>
+          <div class="card-content">
+            <div class="game-container" id="doubleentry-game">
+              <div class="text-center mb-4">
+                <h3 class="mb-2">当前挑战：</h3>
+                <p id="doubleentry-challenge"></p>
+              </div>
+              
+              <div class="flex flex-col gap-4">
+                <div>
+                  <label for="doubleentry-input1" class="block mb-2">第一次输入：</label>
+                  <input type="text" class="input" id="doubleentry-input1" placeholder="请输入信息">
+                </div>
+                <div>
+                  <label for="doubleentry-input2" class="block mb-2">第二次输入：</label>
+                  <input type="text" class="input" id="doubleentry-input2" placeholder="请再次输入相同信息">
+                </div>
+              </div>
+              
+              <div class="flex justify-center gap-4 mt-4">
+                <button class="btn btn-primary" id="doubleentry-check">检查</button>
+                <button class="btn btn-outline" id="doubleentry-reset">
+                  <span class="mr-2">重新输入</span>
+                </button>
+              </div>
+              
+              <div class="feedback-container" id="doubleentry-feedback" style="display: none;">
+                <div id="doubleentry-feedback-icon" class="mb-4"></div>
+                <p id="doubleentry-feedback-text"></p>
+                <button class="btn btn-primary mt-4" id="doubleentry-next">下一题</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 屏幕检查 -->
+      <div class="tab-content" id="screen">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">屏幕检查挑战</h2>
+            <p class="card-description">
+              根据条件筛选符合要求的数据。在这个游戏中，你需要选择所有符合特定条件的数据项。
+            </p>
+          </div>
+          <div class="card-content">
+            <div class="game-container" id="screen-game">
+              <div class="text-center mb-4">
+                <h3 class="mb-2">当前挑战：</h3>
+                <p id="screen-challenge"></p>
+              </div>
+              
+              <div id="screen-items" class="grid grid-cols-2 gap-2 mb-4">
+                <!-- 动态生成的选项 -->
+              </div>
+              
+              <div class="flex justify-center mt-4">
+                <button class="btn btn-primary" id="screen-check">检查</button>
+              </div>
+              
+              <div class="feedback-container" id="screen-feedback" style="display: none;">
+                <div id="screen-feedback-icon" class="mb-4"></div>
+                <p id="screen-feedback-text"></p>
+                <button class="btn btn-primary mt-4" id="screen-next">下一题</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // 初始化Lucide图标
+    lucide.createIcons();
+    
+    // 标签切换功能
+    document.querySelectorAll('.tab-trigger').forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        // 移除所有激活状态
+        document.querySelectorAll('.tab-trigger').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        // 添加当前激活状态
+        trigger.classList.add('active');
+        const tabId = trigger.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+
+    // 范围检查游戏
+    (function() {
+      const challenges = [
+        { value: 25, min: 0, max: 100, description: "检查数值 25 是否在 0 到 100 的范围内", isValid: true },
+        { value: 150, min: 0, max: 100, description: "检查数值 150 是否在 0 到 100 的范围内", isValid: false },
+        { value: -10, min: 0, max: 100, description: "检查数值 -10 是否在 0 到 100 的范围内", isValid: false },
+        { value: "A", min: "A", max: "Z", description: "检查字符 'A' 是否在 'A' 到 'Z' 的范围内", isValid: true },
+        { value: "a", min: "A", max: "Z", description: "检查字符 'a' 是否在 'A' 到 'Z' 的范围内", isValid: false },
+        { value: new Date("2023-06-15"), min: new Date("2023-01-01"), max: new Date("2023-12-31"), description: "检查日期 2023-06-15 是否在 2023 年内", isValid: true },
+        { value: new Date("2024-01-01"), min: new Date("2023-01-01"), max: new Date("2023-12-31"), description: "检查日期 2024-01-01 是否在 2023 年内", isValid: false }
+      ];
+      
+      let currentChallengeIndex = 0;
+      
+      const challengeEl = document.getElementById('range-challenge');
+      const validBtn = document.getElementById('range-valid');
+      const invalidBtn = document.getElementById('range-invalid');
+      const feedbackEl = document.getElementById('range-feedback');
+      const feedbackIconEl = document.getElementById('range-feedback-icon');
+      const feedbackTextEl = document.getElementById('range-feedback-text');
+      const nextBtn = document.getElementById('range-next');
+      
+      function loadChallenge() {
+        const challenge = challenges[currentChallengeIndex];
+        challengeEl.textContent = challenge.description;
+        feedbackEl.style.display = 'none';
+      }
+      
+      function checkAnswer(isValidAnswer) {
+        const challenge = challenges[currentChallengeIndex];
+        const isCorrect = isValidAnswer === challenge.isValid;
+        
+        feedbackIconEl.innerHTML = isCorrect 
+          ? '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
+          : '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+        
+        feedbackTextEl.textContent = isCorrect 
+          ? "正确！" 
+          : `错误！${challenge.value} ${challenge.isValid ? '在' : '不在'} ${challenge.min} 到 ${challenge.max} 的范围内。`;
+        
+        feedbackEl.style.display = 'flex';
+      }
+      
+      function nextChallenge() {
+        currentChallengeIndex = (currentChallengeIndex + 1) % challenges.length;
+        loadChallenge();
+      }
+      
+      validBtn.addEventListener('click', () => checkAnswer(true));
+      invalidBtn.addEventListener('click', () => checkAnswer(false));
+      nextBtn.addEventListener('click', nextChallenge);
+      
+      // 初始加载
+      loadChallenge();
+    })();
+
+    // 长度检查游戏
+    (function() {
+      const challenges = [
+        { type: "密码", min: 8, max: 20, description: "创建一个长度在 8 到 20 个字符之间的密码" },
+        { type: "用户名", min: 3, max: 15, description: "创建一个长度在 3 到 15 个字符之间的用户名" },
+        { type: "邮政编码", min: 6, max: 6, description: "输入一个恰好为 6 位数字的邮政编码" },
+        { type: "手机号码", min: 11, max: 11, description: "输入一个恰好为 11 位数字的手机号码" },
+        { type: "简短描述", min: 10, max: 50, description: "输入一段长度在 10 到 50 个字符之间的简短描述" }
+      ];
+      
+      let currentChallengeIndex = 0;
+      
+      const challengeEl = document.getElementById('length-challenge');
+      const inputEl = document.getElementById('length-input');
+      const strengthBarEl = document.getElementById('length-strength-bar');
+      const strengthTextEl = document.getElementById('length-strength-text');
+      const checkBtn = document.getElementById('length-check');
+      const feedbackEl = document.getElementById('length-feedback');
+      const feedbackIconEl = document.getElementById('length-feedback-icon');
+      const feedbackTextEl = document.getElementById('length-feedback-text');
+      const nextBtn = document.getElementById('length-next');
+      
+      function loadChallenge() {
+        const challenge = challenges[currentChallengeIndex];
+        challengeEl.textContent = challenge.description;
+        inputEl.value = '';
+        updateStrengthBar('');
+        feedbackEl.style.display = 'none';
+      }
+      
+      function updateStrengthBar(value) {
+        const challenge = challenges[currentChallengeIndex];
+        const length = value.length;
+        
+        let color = '#ef4444'; // red
+        let strength = '太短';
+        let percentage = 0;
+        
+        if (length >= challenge.min && length <= challenge.max) {
+          color = '#10b981'; // green
+          strength = '符合要求';
+          percentage = 100;
+        } else if (length > 0) {
+          if (length < challenge.min) {
+            percentage = (length / challenge.min) * 50;
+            strength = '太短';
+          } else {
+            percentage = 50 - ((length - challenge.max) * 5);
+            percentage = Math.max(50, percentage);
+            strength = '太长';
+          }
+        }
+        
+        strengthBarEl.style.width = `${percentage}%`;
+        strengthBarEl.style.backgroundColor = color;
+        strengthTextEl.textContent = strength;
+      }
+      
+      function checkAnswer() {
+        const challenge = challenges[currentChallengeIndex];
+        const length = inputEl.value.length;
+        const isValid = length >= challenge.min && length <= challenge.max;
+        
+        feedbackIconEl.innerHTML = isValid 
+          ? '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
+          : '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+        
+        feedbackTextEl.textContent = isValid 
+          ? `正确！你的${challenge.type}长度符合要求。` 
+          : `错误！${challenge.type}长度应该在 ${challenge.min} 到 ${challenge.max} 个字符之间。`;
+        
+        feedbackEl.style.display = 'flex';
+      }
+      
+      function nextChallenge() {
+        currentChallengeIndex = (currentChallengeIndex + 1) % challenges.length;
+        loadChallenge();
+      }
+      
+      inputEl.addEventListener('input', (e) => updateStrengthBar(e.target.value));
+      checkBtn.addEventListener('click', checkAnswer);
+      nextBtn.addEventListener('click', nextChallenge);
+      
+      // 初始加载
+      loadChallenge();
+    })();
+
+    // 类型检查游戏
+    (function() {
+      const challenges = [
+        { value: 42, display: '42', type: 'number' },
+        { value: "Hello", display: '"Hello"', type: 'string' },
+        { value: true, display: 'true', type: 'boolean' },
+        { value: [1, 2, 3], display: '[1, 2, 3]', type: 'array' },
+        { value: { name: "John" }, display: '{ name: "John" }', type: 'object' },
+        { value: null, display: 'null', type: 'null' },
+        { value: undefined, display: 'undefined', type: 'undefined' },
+        { value: "42", display: '"42"', type: 'string' },
+        { value: 0, display: '0', type: 'number' },
+        { value: false, display: 'false', type: 'boolean' }
+      ];
+      
+      let currentChallengeIndex = 0;
+      
+      const valueEl = document.getElementById('type-value');
+      const typeButtons = document.querySelectorAll('[data-type]');
+      const feedbackEl = document.getElementById('type-feedback');
+      const feedbackIconEl = document.getElementById('type-feedback-icon');
+      const feedbackTextEl = document.getElementById('type-feedback-text');
+      const nextBtn = document.getElementById('type-next');
+      
+      function loadChallenge() {
+        const challenge = challenges[currentChallengeIndex];
+        valueEl.textContent = challenge.display;
+        feedbackEl.style.display = 'none';
+      }
+      
+      function checkAnswer(selectedType) {
+        const challenge = challenges[currentChallengeIndex];
+        const isCorrect = selectedType === challenge.type;
+        
+        feedbackIconEl.innerHTML = isCorrect 
+          ? '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
+          : '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+        
+        feedbackTextEl.textContent = isCorrect 
+          ? "正确！" 
+          : `错误！${challenge.display} 的类型是 ${challenge.type}。`;
+        
+        feedbackEl.style.display = 'flex';
+      }
+      
+      function nextChallenge() {
+        currentChallengeIndex = (currentChallengeIndex + 1) % challenges.length;
+        loadChallenge();
+      }
+      
+      typeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const selectedType = button.getAttribute('data-type');
+          checkAnswer(selectedType);
+        });
+      });
+      
+      nextBtn.addEventListener('click', nextChallenge);
+      
+      // 初始加载
+      loadChallenge();
+    })();
+
+    // 格式检查游戏
+    (function() {
+      const challenges = [
+        { 
+          description: "输入一个有效的电子邮件地址", 
+          regex: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, 
+          hint: "格式: username@domain.com" 
+        },
+        { 
+          description: "输入一个有效的中国手机号码", 
+          regex: /^1[3-9]\d{9}$/, 
+          hint: "格式: 1开头的11位数字" 
+        },
+        { 
+          description: "输入一个有效的日期 (YYYY-MM-DD)", 
+          regex: /^\d{4}-\d{2}-\d{2}$/, 
+          hint: "格式: YYYY-MM-DD (例如: 2023-06-15)" 
+        },
+        { 
+          description: "输入一个有效的URL", 
+          regex: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w.-]*)*\/?$/, 
+          hint: "格式: http://example.com 或 www.example.com" 
+        },
+        { 
+          description: "输入一个有效的中国邮政编码", 
+          regex: /^\d{6}$/, 
+          hint: "格式: 6位数字" 
+        }
+      ];
+      
+      let currentChallengeIndex = 0;
+      
+      const challengeEl = document.getElementById('format-challenge');
+      const inputEl = document.getElementById('format-input');
+      const hintEl = document.getElementById('format-hint');
+      const checkBtn = document.getElementById('format-check');
+      const feedbackEl = document.getElementById('format-feedback');
+      const feedbackIconEl = document.getElementById('format-feedback-icon');
+      const feedbackTextEl = document.getElementById('format-feedback-text');
+      const nextBtn = document.getElementById('format-next');
+      
+      function loadChallenge() {
+        const challenge = challenges[currentChallengeIndex];
+        challengeEl.textContent = challenge.description;
+        hintEl.textContent = challenge.hint;
+        inputEl.value = '';
+        feedbackEl.style.display = 'none';
+      }
+      
+      function checkAnswer() {
+        const challenge = challenges[currentChallengeIndex];
+        const isValid = challenge.regex.test(inputEl.value);
+        
+        feedbackIconEl.innerHTML = isValid 
+          ? '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
+          : '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+        
+        feedbackTextEl.textContent = isValid 
+          ? "正确！格式验证通过。" 
+          : "错误！请检查输入格式是否符合要求。";
+        
+        feedbackEl.style.display = 'flex';
+      }
+      
+      function nextChallenge() {
+        currentChallengeIndex = (currentChallengeIndex + 1) % challenges.length;
+        loadChallenge();
+      }
+      
+      checkBtn.addEventListener('click', checkAnswer);
+      nextBtn.addEventListener('click', nextChallenge);
+      
+      // 初始加载
+      loadChallenge();
+    })();
+
+    // 校验位游戏
+    (function() {
+      // 生成ISBN-10校验位
+      function generateISBN10() {
+        let digits = [];
+        for (let i = 0; i < 9; i++) {
+          digits.push(Math.floor(Math.random() * 10));
+        }
+        
+        let sum = 0;
+        for (let i = 0; i < 9; i++) {
+          sum += digits[i] * (10 - i);
+        }
+        
+        let checkDigit = (11 - (sum % 11)) % 11;
+        if (checkDigit === 10) checkDigit = 'X';
+        
+        return digits.join('') + checkDigit;
+      }
+      
+      // 生成无效的ISBN-10
+      function generateInvalidISBN10() {
+        let validISBN = generateISBN10();
+        let lastChar = validISBN.slice(-1);
+        let newChar;
+        
+        if (lastChar === 'X') {
+          newChar = Math.floor(Math.random() * 10);
+        } else {
+          let options = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'X'];
+          options.splice(options.indexOf(lastChar), 1);
+          newChar = options[Math.floor(Math.random() * options.length)];
+        }
+        
+        return validISBN.slice(0, -1) + newChar;
+      }
+      
+      // 验证ISBN-10
+      function validateISBN10(isbn) {
+        if (!/^[0-9]{9}[0-9X]$/.test(isbn)) return false;
+        
+        let sum = 0;
+        for (let i = 0; i < 9; i++) {
+          sum += parseInt(isbn[i]) * (10 - i);
+        }
+        
+        let checkDigit = (11 - (sum % 11)) % 11;
+        if (checkDigit === 10) checkDigit = 'X';
+        
+        return isbn[9] === checkDigit.toString();
+      }
+      
+      const challenges = [
+        { type: 'ISBN-10', generate: () => ({ number: generateISBN10(), isValid: true }) },
+        { type: 'ISBN-10', generate: () => ({ number: generateInvalidISBN10(), isValid: false }) }
+      ];
+      
+      let currentChallenge;
+      
+      const numberEl = document.getElementById('checkdigit-number');
+      const validBtn = document.getElementById('checkdigit-valid');
+      const invalidBtn = document.getElementById('checkdigit-invalid');
+      const feedbackEl = document.getElementById('checkdigit-feedback');
+      const feedbackIconEl = document.getElementById('checkdigit-feedback-icon');
+      const feedbackTextEl = document.getElementById('checkdigit-feedback-text');
+      const nextBtn = document.getElementById('checkdigit-next');
+      
+      function loadChallenge() {
+        const challengeType = challenges[Math.floor(Math.random() * challenges.length)];
+        currentChallenge = challengeType.generate();
+        
+        numberEl.textContent = currentChallenge.number;
+        feedbackEl.style.display = 'none';
+      }
+      
+      function checkAnswer(isValidAnswer) {
+        const isCorrect = isValidAnswer === currentChallenge.isValid;
+        
+        feedbackIconEl.innerHTML = isCorrect 
+          ? '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
+          : '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+        
+        feedbackTextEl.textContent = isCorrect 
+          ? "正确！" 
+          : `错误！这个编号${currentChallenge.isValid ? '有效' : '无效'}。`;
+        
+        feedbackEl.style.display = 'flex';
+      }
+      
+      validBtn.addEventListener('click', () => checkAnswer(true));
+      invalidBtn.addEventListener('click', () => checkAnswer(false));
+      nextBtn.addEventListener('click', loadChallenge);
+      
+      // 初始加载
+      loadChallenge();
+    })();
+
+    // 双重输入游戏
+    (function() {
+      const challenges = [
+        { description: "输入一个新密码，然后再次输入以确认" },
+        { description: "输入你的电子邮件地址，然后再次输入以确认" },
+        { description: "输入你的手机号码，然后再次输入以确认" },
+        { description: "输入你的用户名，然后再次输入以确认" },
+        { description: "输入一个重要的日期 (YYYY-MM-DD)，然后再次输入以确认" }
+      ];
+      
+      let currentChallengeIndex = 0;
+      
+      const challengeEl = document.getElementById('doubleentry-challenge');
+      const input1El = document.getElementById('doubleentry-input1');
+      const input2El = document.getElementById('doubleentry-input2');
+      const checkBtn = document.getElementById('doubleentry-check');
+      const resetBtn = document.getElementById('doubleentry-reset');
+      const feedbackEl = document.getElementById('doubleentry-feedback');
+      const feedbackIconEl = document.getElementById('doubleentry-feedback-icon');
+      const feedbackTextEl = document.getElementById('doubleentry-feedback-text');
+      const nextBtn = document.getElementById('doubleentry-next');
+      
+      function loadChallenge() {
+        const challenge = challenges[currentChallengeIndex];
+        challengeEl.textContent = challenge.description;
+        resetEntries();
+        feedbackEl.style.display = 'none';
+      }
+      
+      function resetEntries() {
+        input1El.value = '';
+        input2El.value = '';
+      }
+      
+      function checkEntries() {
+        const isMatch = input1El.value === input2El.value && input1El.value !== '';
+        
+        feedbackIconEl.innerHTML = isMatch 
+          ? '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
+          : '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+        
+        feedbackTextEl.textContent = isMatch 
+          ? "正确！两次输入匹配。" 
+          : input1El.value === '' || input2El.value === '' 
+            ? "错误！请完成两次输入。" 
+            : "错误！两次输入不匹配。";
+        
+        feedbackEl.style.display = 'flex';
+      }
+      
+      function nextChallenge() {
+        currentChallengeIndex = (currentChallengeIndex + 1) % challenges.length;
+        loadChallenge();
+      }
+      
+      checkBtn.addEventListener('click', checkEntries);
+      resetBtn.addEventListener('click', resetEntries);
+      nextBtn.addEventListener('click', nextChallenge);
+      
+      // 初始加载
+      loadChallenge();
+    })();
+
+    // 屏幕检查游戏
+    (function() {
+      const challenges = [
+        { 
+          description: "选择所有偶数", 
+          items: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          isValid: (item) => item % 2 === 0
+        },
+        { 
+          description: "选择所有大于50的数字", 
+          items: [23, 45, 67, 89, 12, 34, 56, 78, 90, 43],
+          isValid: (item) => item > 50
+        },
+        { 
+          description: "选择所有水果", 
+          items: ["苹果", "汽车", "香蕉", "电脑", "橙子", "书本", "草莓", "手机", "西瓜", "椅子"],
+          isValid: (item) => ["苹果", "香蕉", "橙子", "草莓", "西瓜"].includes(item)
+        },
+        { 
+          description: "选择所有元音字母", 
+          items: ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "O", "U"],
+          isValid: (item) => ["A", "E", "I", "O", "U"].includes(item)
+        },
+        { 
+          description: "选择所有有效的邮箱地址", 
+          items: ["user@example.com", "invalid-email", "another@domain.com", "missing@", "@nodomain.com", "valid@test.org"],
+          isValid: (item) => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(item)
+        }
+      ];
+      
+      let currentChallengeIndex = 0;
+      let selectedItems = new Set();
+      
+      const challengeEl = document.getElementById('screen-challenge');
+      const itemsEl = document.getElementById('screen-items');
+      const checkBtn = document.getElementById('screen-check');
+      const feedbackEl = document.getElementById('screen-feedback');
+      const feedbackIconEl = document.getElementById('screen-feedback-icon');
+      const feedbackTextEl = document.getElementById('screen-feedback-text');
+      const nextBtn = document.getElementById('screen-next');
+      
+      function loadChallenge() {
+        const challenge = challenges[currentChallengeIndex];
+        challengeEl.textContent = challenge.description;
+        selectedItems.clear();
+        
+        // 生成选项
+        itemsEl.innerHTML = '';
+        challenge.items.forEach((item, index) => {
+          const itemEl = document.createElement('div');
+          itemEl.className = 'p-2 border rounded cursor-pointer';
+          itemEl.textContent = item;
+          itemEl.dataset.index = index;
+          
+          itemEl.addEventListener('click', () => {
+            if (selectedItems.has(index)) {
+              selectedItems.delete(index);
+              itemEl.classList.remove('bg-primary', 'text-primary-foreground');
+            } else {
+              selectedItems.add(index);
+              itemEl.classList.add('bg-primary', 'text-primary-foreground');
+            }
+          });
+          
+          itemsEl.appendChild(itemEl);
+        });
+        
+        feedbackEl.style.display = 'none';
+      }
+      
+      function checkAnswer() {
+        const challenge = challenges[currentChallengeIndex];
+        let correct = 0;
+        let incorrect = 0;
+        
+        challenge.items.forEach((item, index) => {
+          const shouldBeSelected = challenge.isValid(item);
+          const isSelected = selectedItems.has(index);
+          
+          if (shouldBeSelected === isSelected) {
+            correct++;
+          } else {
+            incorrect++;
+          }
+        });
+        
+        const isAllCorrect = incorrect === 0;
+        
+        feedbackIconEl.innerHTML = isAllCorrect 
+          ? '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
+          : '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-500"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+        
+        feedbackTextEl.textContent = isAllCorrect 
+          ? "正确！你选择了所有符合条件的项目。" 
+          : `错误！你有 ${incorrect} 个选择不正确。`;
+        
+        feedbackEl.style.display = 'flex';
+      }
+      
+      function nextChallenge() {
+        currentChallengeIndex = (currentChallengeIndex + 1) % challenges.length;
+        loadChallenge();
+      }
+      
+      checkBtn.addEventListener('click', checkAnswer);
+      nextBtn.addEventListener('click', nextChallenge);
+      
+      // 初始加载
+      loadChallenge();
+    })();
+  </script>
+</body>
+</html>
+
